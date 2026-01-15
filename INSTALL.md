@@ -403,20 +403,15 @@ npm install cross-env --save-dev
 npm start
 ```
 
-**Windows (Alternative - without modifying package.json):**
+**Windows / Linux / macOS (using .env file - Recommended):**
 
-```powershell
-$env:NODE_ENV="production"
+The application automatically loads environment variables from a `.env` file. Simply create the file and run:
+
+```bash
 node dist/index.cjs
 ```
 
-**Windows (Command Prompt):**
-
-```cmd
-set NODE_ENV=production && node dist/index.cjs
-```
-
-The application will be available at `http://your-server-ip:5000`
+The application will be available at `http://your-server-ip:5000` (or `http://127.0.0.1:5000` on Windows)
 
 ## Step 8: Create Your First Admin User
 
