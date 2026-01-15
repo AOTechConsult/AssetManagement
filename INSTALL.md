@@ -384,10 +384,36 @@ npm run build
 
 ## Step 7: Start the Application
 
-Start the server:
+**Linux/macOS:**
 
 ```bash
 npm start
+```
+
+**Windows (PowerShell):**
+
+```powershell
+# First, install cross-env for Windows compatibility
+npm install cross-env --save-dev
+
+# Then manually edit package.json and change the "start" script to:
+# "start": "cross-env NODE_ENV=production node dist/index.cjs"
+
+# Now you can run:
+npm start
+```
+
+**Windows (Alternative - without modifying package.json):**
+
+```powershell
+$env:NODE_ENV="production"
+node dist/index.cjs
+```
+
+**Windows (Command Prompt):**
+
+```cmd
+set NODE_ENV=production && node dist/index.cjs
 ```
 
 The application will be available at `http://your-server-ip:5000`
