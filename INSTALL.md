@@ -68,6 +68,12 @@ CREATE USER asset_user WITH PASSWORD 'your-secure-password';
 CREATE DATABASE asset_management OWNER asset_user;
 GRANT ALL PRIVILEGES ON DATABASE asset_management TO asset_user;
 
+# Connect to the new database and grant schema permissions (required for PostgreSQL 15+)
+\c asset_management
+GRANT ALL ON SCHEMA public TO asset_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO asset_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO asset_user;
+
 # Exit PostgreSQL
 \q
 ```
@@ -126,6 +132,12 @@ CREATE USER asset_user WITH PASSWORD 'your-secure-password';
 CREATE DATABASE asset_management OWNER asset_user;
 GRANT ALL PRIVILEGES ON DATABASE asset_management TO asset_user;
 
+-- Grant schema permissions (required for PostgreSQL 15+)
+\c asset_management
+GRANT ALL ON SCHEMA public TO asset_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO asset_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO asset_user;
+
 \q
 ```
 
@@ -155,6 +167,13 @@ From the Start menu, open "SQL Shell (psql)" and login with the postgres user.
 CREATE USER asset_user WITH PASSWORD 'your-secure-password';
 CREATE DATABASE asset_management OWNER asset_user;
 GRANT ALL PRIVILEGES ON DATABASE asset_management TO asset_user;
+
+-- Grant schema permissions (required for PostgreSQL 15+)
+\c asset_management
+GRANT ALL ON SCHEMA public TO asset_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO asset_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO asset_user;
+
 \q
 ```
 
@@ -177,6 +196,12 @@ psql postgres
 CREATE USER asset_user WITH PASSWORD 'your-secure-password';
 CREATE DATABASE asset_management OWNER asset_user;
 GRANT ALL PRIVILEGES ON DATABASE asset_management TO asset_user;
+
+-- Grant schema permissions (required for PostgreSQL 15+)
+\c asset_management
+GRANT ALL ON SCHEMA public TO asset_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO asset_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO asset_user;
 
 \q
 ```
