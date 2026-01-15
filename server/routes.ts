@@ -1,13 +1,15 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
+import passport from "passport";
 import { storage } from "./storage";
-import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
+import { setupAuth, isAuthenticated, registerUser, getUserByEmail, getUser } from "./auth";
 import {
   insertCategorySchema,
   insertAssetSchema,
   insertAdUserSchema,
   ASSET_STATUSES,
 } from "@shared/schema";
+import { loginSchema, registerSchema } from "@shared/models/auth";
 import { z } from "zod";
 
 function getClientInfo(req: Request) {
@@ -18,12 +20,12 @@ function getClientInfo(req: Request) {
 }
 
 function getUserInfo(req: Request) {
-  const user = req.user as any;
+  const user = req.user;
   return {
-    userId: user?.claims?.sub || null,
-    userName: user?.claims?.first_name
-      ? `${user.claims.first_name} ${user.claims.last_name || ""}`.trim()
-      : user?.claims?.email || "System",
+    userId: user?.id || null,
+    userName: user?.firstName
+      ? `${user.firstName} ${user.lastName || ""}`.trim()
+      : user?.email || "System",
   };
 }
 
@@ -51,7 +53,84 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   await setupAuth(app);
-  registerAuthRoutes(app);
+
+  // Auth routes
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const data = registerSchema.parse(req.body);
+      
+      const existingUser = await getUserByEmail(data.email);
+      if (existingUser) {
+        return res.status(400).json({ message: "Email already registered" });
+      }
+
+      const user = await registerUser(
+        data.email,
+        data.password,
+        data.firstName,
+        data.lastName
+      );
+
+      req.login(user, (err) => {
+        if (err) {
+          return res.status(500).json({ message: "Failed to log in after registration" });
+        }
+        res.status(201).json(user);
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      console.error("Registration error:", error);
+      res.status(500).json({ message: "Registration failed" });
+    }
+  });
+
+  app.post("/api/auth/login", (req, res, next) => {
+    try {
+      loginSchema.parse(req.body);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+    }
+
+    passport.authenticate("local", (err: any, user: any, info: any) => {
+      if (err) {
+        return res.status(500).json({ message: "Authentication error" });
+      }
+      if (!user) {
+        return res.status(401).json({ message: info?.message || "Invalid credentials" });
+      }
+      req.login(user, (loginErr) => {
+        if (loginErr) {
+          return res.status(500).json({ message: "Login failed" });
+        }
+        res.json(user);
+      });
+    })(req, res, next);
+  });
+
+  app.post("/api/auth/logout", (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      req.session.destroy((sessionErr) => {
+        res.json({ success: true });
+      });
+    });
+  });
+
+  app.get("/api/auth/user", isAuthenticated, async (req, res) => {
+    try {
+      const user = await getUser(req.user!.id);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
 
   // Stats
   app.get("/api/stats", async (req, res) => {

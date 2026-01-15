@@ -1,5 +1,11 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import {
   Shield,
   Package,
@@ -9,6 +15,7 @@ import {
   BarChart3,
   CheckCircle,
   ArrowRight,
+  Loader2,
 } from "lucide-react";
 
 const features = [
@@ -22,7 +29,7 @@ const features = [
     icon: FileSpreadsheet,
     title: "Smart Import",
     description:
-      "Upload spreadsheets and our AI automatically maps columns to fields, making bulk imports effortless.",
+      "Upload spreadsheets and our system automatically maps columns to fields, making bulk imports effortless.",
   },
   {
     icon: Users,
@@ -59,6 +66,48 @@ const benefits = [
 ];
 
 export default function LandingPage() {
+  const { toast } = useToast();
+  const { login, register, isLoggingIn, isRegistering } = useAuth();
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+  const [registerFirstName, setRegisterFirstName] = useState("");
+  const [registerLastName, setRegisterLastName] = useState("");
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await login({ email: loginEmail, password: loginPassword });
+      toast({ title: "Welcome back!" });
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description: error.message || "Invalid email or password",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await register({
+        email: registerEmail,
+        password: registerPassword,
+        firstName: registerFirstName,
+        lastName: registerLastName || undefined,
+      });
+      toast({ title: "Account created successfully!" });
+    } catch (error: any) {
+      toast({
+        title: "Registration failed",
+        description: error.message || "Could not create account",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <nav className="fixed top-0 left-0 right-0 z-50 border-b bg-background/80 backdrop-blur-md">
@@ -70,11 +119,11 @@ export default function LandingPage() {
             <span className="text-lg font-semibold">AssetVault</span>
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" className="hidden sm:inline-flex">
-              Features
+            <Button variant="ghost" className="hidden sm:inline-flex" asChild>
+              <a href="#features">Features</a>
             </Button>
             <Button asChild data-testid="button-get-started">
-              <a href="/api/login">Get Started</a>
+              <a href="#auth">Get Started</a>
             </Button>
           </div>
         </div>
@@ -106,55 +155,160 @@ export default function LandingPage() {
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button size="lg" asChild data-testid="button-hero-cta">
-                  <a href="/api/login">
+                  <a href="#auth">
                     Start Free
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </a>
                 </Button>
-                <Button size="lg" variant="outline">
-                  Watch Demo
+                <Button size="lg" variant="outline" asChild>
+                  <a href="#features">Learn More</a>
                 </Button>
               </div>
 
               <p className="text-sm text-muted-foreground">
-                Free to use. No credit card required.
+                Self-hosted. Your data stays with you.
               </p>
             </div>
 
-            <div className="relative">
-              <div className="aspect-square rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent p-8 flex items-center justify-center">
-                <div className="grid grid-cols-2 gap-4 w-full max-w-md">
-                  <Card className="col-span-2">
-                    <CardContent className="p-4 flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Package className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Total Assets</p>
-                        <p className="text-2xl font-bold">2,847</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <p className="text-sm text-muted-foreground">Active</p>
-                      <p className="text-xl font-bold text-green-500">2,103</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <p className="text-sm text-muted-foreground">Maintenance</p>
-                      <p className="text-xl font-bold text-yellow-500">156</p>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
+            <div id="auth" className="scroll-mt-24">
+              <Card className="shadow-lg">
+                <CardHeader className="text-center">
+                  <CardTitle>Welcome to AssetVault</CardTitle>
+                  <CardDescription>
+                    Sign in to your account or create a new one
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Tabs defaultValue="login" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-6">
+                      <TabsTrigger value="login" data-testid="tab-login">
+                        Sign In
+                      </TabsTrigger>
+                      <TabsTrigger value="register" data-testid="tab-register">
+                        Register
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="login">
+                      <form onSubmit={handleLogin} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="login-email">Email</Label>
+                          <Input
+                            id="login-email"
+                            type="email"
+                            placeholder="you@company.com"
+                            value={loginEmail}
+                            onChange={(e) => setLoginEmail(e.target.value)}
+                            required
+                            data-testid="input-login-email"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="login-password">Password</Label>
+                          <Input
+                            id="login-password"
+                            type="password"
+                            placeholder="Enter your password"
+                            value={loginPassword}
+                            onChange={(e) => setLoginPassword(e.target.value)}
+                            required
+                            data-testid="input-login-password"
+                          />
+                        </div>
+                        <Button
+                          type="submit"
+                          className="w-full"
+                          disabled={isLoggingIn}
+                          data-testid="button-login"
+                        >
+                          {isLoggingIn ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Signing in...
+                            </>
+                          ) : (
+                            "Sign In"
+                          )}
+                        </Button>
+                      </form>
+                    </TabsContent>
+
+                    <TabsContent value="register">
+                      <form onSubmit={handleRegister} className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="register-firstname">First Name</Label>
+                            <Input
+                              id="register-firstname"
+                              placeholder="John"
+                              value={registerFirstName}
+                              onChange={(e) => setRegisterFirstName(e.target.value)}
+                              required
+                              data-testid="input-register-firstname"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="register-lastname">Last Name</Label>
+                            <Input
+                              id="register-lastname"
+                              placeholder="Smith"
+                              value={registerLastName}
+                              onChange={(e) => setRegisterLastName(e.target.value)}
+                              data-testid="input-register-lastname"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="register-email">Email</Label>
+                          <Input
+                            id="register-email"
+                            type="email"
+                            placeholder="you@company.com"
+                            value={registerEmail}
+                            onChange={(e) => setRegisterEmail(e.target.value)}
+                            required
+                            data-testid="input-register-email"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="register-password">Password</Label>
+                          <Input
+                            id="register-password"
+                            type="password"
+                            placeholder="At least 6 characters"
+                            value={registerPassword}
+                            onChange={(e) => setRegisterPassword(e.target.value)}
+                            required
+                            minLength={6}
+                            data-testid="input-register-password"
+                          />
+                        </div>
+                        <Button
+                          type="submit"
+                          className="w-full"
+                          disabled={isRegistering}
+                          data-testid="button-register"
+                        >
+                          {isRegistering ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Creating account...
+                            </>
+                          ) : (
+                            "Create Account"
+                          )}
+                        </Button>
+                      </form>
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="py-20 px-6 bg-muted/30">
+      <section id="features" className="py-20 px-6 bg-muted/30 scroll-mt-20">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">
@@ -185,10 +339,10 @@ export default function LandingPage() {
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Take Control?</h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Join teams who have transformed their IT asset management
+            Deploy on your own infrastructure and own your data
           </p>
           <Button size="lg" asChild data-testid="button-footer-cta">
-            <a href="/api/login">
+            <a href="#auth">
               Get Started Free
               <ArrowRight className="ml-2 h-4 w-4" />
             </a>
@@ -206,7 +360,7 @@ export default function LandingPage() {
               <span className="font-semibold">AssetVault</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Enterprise IT Asset Management Platform
+              Self-Hosted Enterprise IT Asset Management Platform
             </p>
           </div>
         </div>
