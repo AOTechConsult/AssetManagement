@@ -37,30 +37,261 @@ npm install
 
 ## Step 3: Set Up PostgreSQL Database
 
-### Option A: Using an existing PostgreSQL server
+Choose the option that best fits your environment:
 
-1. Create a new database:
-```sql
-CREATE DATABASE asset_management;
+---
+
+### Option A: Install PostgreSQL on Ubuntu/Debian
+
+**1. Install PostgreSQL:**
+
+```bash
+sudo apt update
+sudo apt install postgresql postgresql-contrib
 ```
 
-2. Create a user (optional but recommended):
+**2. Start and enable the service:**
+
+```bash
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+```
+
+**3. Create the database and user:**
+
+```bash
+# Switch to postgres user
+sudo -u postgres psql
+
+# In the PostgreSQL prompt, run:
+CREATE USER asset_user WITH PASSWORD 'your-secure-password';
+CREATE DATABASE asset_management OWNER asset_user;
+GRANT ALL PRIVILEGES ON DATABASE asset_management TO asset_user;
+
+# Exit PostgreSQL
+\q
+```
+
+**4. Verify the connection:**
+
+```bash
+psql -U asset_user -d asset_management -h localhost
+# Enter your password when prompted
+# Type \q to exit
+```
+
+---
+
+### Option B: Install PostgreSQL on CentOS/RHEL/Rocky Linux
+
+**1. Install PostgreSQL:**
+
+```bash
+sudo dnf install postgresql-server postgresql-contrib
+sudo postgresql-setup --initdb
+```
+
+**2. Start and enable the service:**
+
+```bash
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+```
+
+**3. Configure authentication (edit pg_hba.conf):**
+
+```bash
+sudo nano /var/lib/pgsql/data/pg_hba.conf
+```
+
+Change the line for local connections from `ident` to `md5`:
+
+```
+# IPv4 local connections:
+host    all             all             127.0.0.1/32            md5
+```
+
+Restart PostgreSQL:
+
+```bash
+sudo systemctl restart postgresql
+```
+
+**4. Create the database and user:**
+
+```bash
+sudo -u postgres psql
+
+CREATE USER asset_user WITH PASSWORD 'your-secure-password';
+CREATE DATABASE asset_management OWNER asset_user;
+GRANT ALL PRIVILEGES ON DATABASE asset_management TO asset_user;
+
+\q
+```
+
+---
+
+### Option C: Install PostgreSQL on Windows
+
+**1. Download the installer:**
+
+Go to https://www.postgresql.org/download/windows/ and download the installer.
+
+**2. Run the installer:**
+
+- Choose installation directory (default is fine)
+- Select all components
+- Set a password for the postgres superuser (remember this!)
+- Keep the default port 5432
+- Complete the installation
+
+**3. Open pgAdmin or SQL Shell (psql):**
+
+From the Start menu, open "SQL Shell (psql)" and login with the postgres user.
+
+**4. Create the database and user:**
+
 ```sql
 CREATE USER asset_user WITH PASSWORD 'your-secure-password';
+CREATE DATABASE asset_management OWNER asset_user;
 GRANT ALL PRIVILEGES ON DATABASE asset_management TO asset_user;
+\q
 ```
 
-### Option B: Using Docker for PostgreSQL
+---
+
+### Option D: Install PostgreSQL on macOS
+
+**Using Homebrew:**
+
+```bash
+brew install postgresql@16
+brew services start postgresql@16
+```
+
+**Create the database and user:**
+
+```bash
+psql postgres
+
+CREATE USER asset_user WITH PASSWORD 'your-secure-password';
+CREATE DATABASE asset_management OWNER asset_user;
+GRANT ALL PRIVILEGES ON DATABASE asset_management TO asset_user;
+
+\q
+```
+
+---
+
+### Option E: Using Docker (Recommended for Testing)
+
+**1. Run PostgreSQL container:**
 
 ```bash
 docker run -d \
-  --name postgres \
+  --name asset-postgres \
   -e POSTGRES_DB=asset_management \
   -e POSTGRES_USER=asset_user \
   -e POSTGRES_PASSWORD=your-secure-password \
   -p 5432:5432 \
+  -v postgres_data:/var/lib/postgresql/data \
   postgres:16
 ```
+
+**2. Verify it's running:**
+
+```bash
+docker ps
+docker logs asset-postgres
+```
+
+**3. Connect to the database (optional):**
+
+```bash
+docker exec -it asset-postgres psql -U asset_user -d asset_management
+```
+
+---
+
+### Option F: Using Docker Compose
+
+Create a `docker-compose.yml` file:
+
+```yaml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: asset-postgres
+    environment:
+      POSTGRES_DB: asset_management
+      POSTGRES_USER: asset_user
+      POSTGRES_PASSWORD: your-secure-password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+```
+
+Start the database:
+
+```bash
+docker-compose up -d
+```
+
+---
+
+### Database Connection String Format
+
+After setting up PostgreSQL, your connection string will be:
+
+```
+postgresql://USERNAME:PASSWORD@HOST:PORT/DATABASE
+```
+
+**Examples:**
+
+| Setup | Connection String |
+|-------|-------------------|
+| Local install | `postgresql://asset_user:your-secure-password@localhost:5432/asset_management` |
+| Docker | `postgresql://asset_user:your-secure-password@localhost:5432/asset_management` |
+| Remote server | `postgresql://asset_user:your-secure-password@192.168.1.100:5432/asset_management` |
+| With special chars in password | `postgresql://asset_user:p%40ssw0rd%21@localhost:5432/asset_management` |
+
+**Note:** If your password contains special characters, URL-encode them:
+- `@` becomes `%40`
+- `!` becomes `%21`
+- `#` becomes `%23`
+- `$` becomes `%24`
+
+---
+
+### Verify Database Setup
+
+Before proceeding, verify your database is accessible:
+
+```bash
+# Test connection with psql
+psql postgresql://asset_user:your-secure-password@localhost:5432/asset_management -c "SELECT 1"
+
+# Expected output:
+#  ?column?
+# ----------
+#        1
+# (1 row)
+```
+
+If the connection fails, check:
+1. PostgreSQL service is running
+2. Username and password are correct
+3. Database name is correct
+4. Port 5432 is not blocked by a firewall
+5. pg_hba.conf allows the connection method
 
 ## Step 4: Configure Environment Variables
 
