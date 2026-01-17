@@ -13,19 +13,53 @@ Before you begin, ensure you have:
 
 ## Step 1: Download the Application
 
-Clone or download the application to your server:
+You need to get the application files onto your server first.
+
+### Option A: Using Git (if available)
 
 ```bash
 git clone <your-repository-url> asset-management
 cd asset-management
 ```
 
-Or if you downloaded a zip file:
+### Option B: Download as ZIP file
 
-```bash
-unzip asset-management.zip
-cd asset-management
+1. Download the ZIP file from your repository or source
+2. Extract the contents to a folder (e.g., `C:\asset-management` on Windows or `/opt/asset-management` on Linux)
+3. Open a terminal/command prompt and navigate to that folder
+
+**Windows (Command Prompt or PowerShell):**
+```powershell
+cd C:\asset-management
 ```
+
+**Linux/macOS:**
+```bash
+cd /opt/asset-management
+```
+
+### Verify Files Are Present
+
+Before continuing, make sure you see these files in your directory:
+
+```
+asset-management/
+  ├── package.json        <-- This file must exist!
+  ├── package-lock.json
+  ├── tsconfig.json
+  ├── client/
+  ├── server/
+  ├── shared/
+  └── ...
+```
+
+**Windows:** Run `dir` to list files
+**Linux/macOS:** Run `ls -la` to list files
+
+If you don't see `package.json`, you're either:
+- In the wrong directory
+- The files weren't extracted properly
+- You need to extract the ZIP file first
 
 ## Step 2: Install Dependencies
 
