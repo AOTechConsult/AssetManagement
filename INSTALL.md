@@ -375,6 +375,34 @@ NODE_ENV=production
 
 # Server port (optional, defaults to 5000)
 PORT=5000
+
+# Host binding (use 127.0.0.1 for Windows)
+HOST=0.0.0.0
+
+# ============================================
+# LDAP / Active Directory Configuration (OPTIONAL)
+# ============================================
+# Set these to enable real Active Directory integration.
+# If not set, AD sync will operate in simulated mode.
+
+# LDAP server URL (e.g., ldap://dc.example.com:389 or ldaps://dc.example.com:636)
+# LDAP_URL=ldap://your-domain-controller:389
+
+# Base DN for user searches (e.g., DC=example,DC=com)
+# LDAP_BASE_DN=DC=example,DC=com
+
+# Service account for LDAP binding (needs read access to users)
+# LDAP_BIND_DN=CN=ldap-reader,OU=Service Accounts,DC=example,DC=com
+# LDAP_BIND_PASSWORD=your-service-account-password
+
+# Optional: Custom LDAP filters
+# LDAP_USER_FILTER=(objectClass=user)
+# LDAP_GROUP_FILTER=(objectClass=group)
+
+# Optional: Group DNs for role-based access (users in these groups get assigned roles)
+# LDAP_ADMIN_GROUP_DN=CN=Asset-Admins,OU=Groups,DC=example,DC=com
+# LDAP_USER_GROUP_DN=CN=Asset-Users,OU=Groups,DC=example,DC=com
+# LDAP_READONLY_GROUP_DN=CN=Asset-Viewers,OU=Groups,DC=example,DC=com
 ```
 
 ### Generating a Secure SESSION_SECRET

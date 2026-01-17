@@ -75,6 +75,26 @@ PORT=5000 (optional, defaults to 5000)
 - Never reuse secrets between environments
 - Keep this secret safe - if compromised, regenerate immediately
 
+### LDAP / Active Directory Configuration (Optional)
+
+To enable real Active Directory integration, set these environment variables:
+
+```
+LDAP_URL=ldap://your-domain-controller:389
+LDAP_BASE_DN=DC=example,DC=com
+LDAP_BIND_DN=CN=ldap-reader,OU=Service Accounts,DC=example,DC=com
+LDAP_BIND_PASSWORD=your-service-account-password
+```
+
+Optional group-based role mapping:
+```
+LDAP_ADMIN_GROUP_DN=CN=Asset-Admins,OU=Groups,DC=example,DC=com
+LDAP_USER_GROUP_DN=CN=Asset-Users,OU=Groups,DC=example,DC=com
+LDAP_READONLY_GROUP_DN=CN=Asset-Viewers,OU=Groups,DC=example,DC=com
+```
+
+If LDAP is not configured, the AD sync operates in simulated mode with sample users.
+
 ### Production Build
 
 ```bash
@@ -145,7 +165,8 @@ CMD ["npm", "start"]
 - `POST /api/ad-users` - Create AD user
 - `PATCH /api/ad-users/:id` - Update AD user
 - `DELETE /api/ad-users/:id` - Delete AD user
-- `POST /api/ad-users/sync` - Trigger AD sync (simulated)
+- `POST /api/ad-users/sync` - Trigger AD sync (real or simulated depending on LDAP config)
+- `GET /api/ldap/status` - Get LDAP connection status
 
 ### Audit Logs
 - `GET /api/audit-logs` - List all audit logs

@@ -1,4 +1,4 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import passport from "passport";
 import { storage } from "./storage";
@@ -9,8 +9,52 @@ import {
   insertAdUserSchema,
   ASSET_STATUSES,
 } from "@shared/schema";
-import { loginSchema, registerSchema } from "@shared/models/auth";
+import { loginSchema, registerSchema, type UserRole } from "@shared/models/auth";
 import { z } from "zod";
+import { isLdapConfigured, syncAllUsers, testConnection as testLdapConnection, getLdapConfig, getUserRole } from "./ldap";
+
+function requireRole(...allowedRoles: UserRole[]) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.isAuthenticated() || !req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
+    const userRole = (req.user.role as UserRole) || "user";
+    const isAdmin = req.user.isAdmin;
+    
+    if (isAdmin || allowedRoles.includes(userRole)) {
+      return next();
+    }
+    
+    return res.status(403).json({ message: "Forbidden: Insufficient permissions" });
+  };
+}
+
+function isAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!req.isAuthenticated() || !req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  
+  const userRole = (req.user.role as UserRole) || "user";
+  if (req.user.isAdmin || userRole === "admin") {
+    return next();
+  }
+  
+  return res.status(403).json({ message: "Forbidden: Admin access required" });
+}
+
+function canWrite(req: Request, res: Response, next: NextFunction) {
+  if (!req.isAuthenticated() || !req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  
+  const userRole = (req.user.role as UserRole) || "user";
+  if (userRole === "readonly") {
+    return res.status(403).json({ message: "Forbidden: Read-only access" });
+  }
+  
+  return next();
+}
 
 function getClientInfo(req: Request) {
   return {
@@ -519,21 +563,108 @@ export async function registerRoutes(
       const { userId, userName } = getUserInfo(req);
       const { ipAddress, userAgent } = getClientInfo(req);
 
+      if (!isLdapConfigured()) {
+        await storage.createAuditLog({
+          entityType: "system",
+          entityId: "ad-sync",
+          action: "sync",
+          userId,
+          userName,
+          newData: { action: "AD Sync triggered (LDAP not configured - simulated)" },
+          ipAddress,
+          userAgent,
+        });
+        return res.json({ 
+          success: true, 
+          message: "AD sync simulated (LDAP not configured). Configure LDAP_URL, LDAP_BASE_DN, LDAP_BIND_DN, and LDAP_BIND_PASSWORD to enable real sync.",
+          synced: 0,
+          created: 0,
+          updated: 0,
+        });
+      }
+
+      const ldapUsers = await syncAllUsers();
+      const config = getLdapConfig()!;
+      
+      let created = 0;
+      let updated = 0;
+
+      for (const ldapUser of ldapUsers) {
+        const existingUser = await storage.getAdUserByEmail(ldapUser.email);
+        
+        const userData = {
+          employeeId: ldapUser.employeeId || ldapUser.sAMAccountName,
+          displayName: ldapUser.displayName,
+          email: ldapUser.email,
+          department: ldapUser.department || null,
+          title: ldapUser.title || null,
+          manager: ldapUser.manager || null,
+          officeLocation: ldapUser.officeLocation || null,
+          phone: ldapUser.phone || null,
+          isActive: true,
+        };
+
+        if (existingUser) {
+          await storage.updateAdUser(existingUser.id, userData);
+          updated++;
+        } else {
+          await storage.createAdUser(userData);
+          created++;
+        }
+      }
+
       await storage.createAuditLog({
         entityType: "system",
         entityId: "ad-sync",
         action: "sync",
         userId,
         userName,
-        newData: { action: "AD Sync triggered" },
+        newData: { 
+          action: "AD Sync completed", 
+          totalUsers: ldapUsers.length,
+          created,
+          updated,
+        },
         ipAddress,
         userAgent,
       });
 
-      res.json({ success: true, message: "AD sync completed (simulated)" });
-    } catch (error) {
+      res.json({ 
+        success: true, 
+        message: `AD sync completed. ${created} users created, ${updated} users updated.`,
+        synced: ldapUsers.length,
+        created,
+        updated,
+      });
+    } catch (error: any) {
       console.error("Error syncing AD:", error);
-      res.status(500).json({ message: "Failed to sync AD" });
+      res.status(500).json({ message: `Failed to sync AD: ${error.message}` });
+    }
+  });
+
+  app.get("/api/ldap/status", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const configured = isLdapConfigured();
+      if (!configured) {
+        return res.json({
+          configured: false,
+          message: "LDAP not configured. Set LDAP_URL, LDAP_BASE_DN, LDAP_BIND_DN, and LDAP_BIND_PASSWORD environment variables.",
+        });
+      }
+      
+      const result = await testLdapConnection();
+      res.json({
+        configured: true,
+        connected: result.success,
+        message: result.message,
+        userCount: result.userCount,
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        configured: isLdapConfigured(),
+        connected: false,
+        message: `Error testing LDAP connection: ${error.message}`,
+      });
     }
   });
 
