@@ -43,6 +43,7 @@ export interface IStorage {
   // AD Users
   getAdUsers(): Promise<AdUser[]>;
   getAdUser(id: string): Promise<AdUser | undefined>;
+  getAdUserByEmail(email: string): Promise<AdUser | undefined>;
   createAdUser(data: InsertAdUser): Promise<AdUser>;
   updateAdUser(id: string, data: Partial<InsertAdUser>): Promise<AdUser | undefined>;
   deleteAdUser(id: string): Promise<boolean>;
@@ -159,7 +160,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAuditLog(data: InsertAuditLog): Promise<AuditLog> {
-    const [log] = await db.insert(auditLogs).values(data).returning();
+    const [log] = await db.insert(auditLogs).values(data as any).returning();
     return log;
   }
 
@@ -170,6 +171,12 @@ export class DatabaseStorage implements IStorage {
 
   async getAdUser(id: string): Promise<AdUser | undefined> {
     const [user] = await db.select().from(adUsers).where(eq(adUsers.id, id));
+    return user;
+  }
+
+  async getAdUserByEmail(email: string): Promise<AdUser | undefined> {
+    if (!email) return undefined;
+    const [user] = await db.select().from(adUsers).where(eq(adUsers.email, email));
     return user;
   }
 

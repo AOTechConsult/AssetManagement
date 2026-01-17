@@ -221,7 +221,7 @@ function UserFormDialog({
             <div className="flex items-center space-x-2">
               <Switch
                 id="isActive"
-                checked={formData.isActive}
+                checked={formData.isActive ?? true}
                 onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
                 data-testid="switch-active"
               />
@@ -270,13 +270,26 @@ export default function UsersPage() {
     mutationFn: async () => {
       return apiRequest("POST", "/api/ad-users/sync");
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/ad-users"] });
-      toast({ title: "Success", description: "AD sync completed" });
+      queryClient.invalidateQueries({ queryKey: ["/api/ldap/status"] });
+      toast({ 
+        title: "Sync Complete", 
+        description: data.message || "AD sync completed successfully",
+      });
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     },
+  });
+
+  const { data: ldapStatus } = useQuery<{
+    configured: boolean;
+    connected?: boolean;
+    message: string;
+    userCount?: number;
+  }>({
+    queryKey: ["/api/ldap/status"],
   });
 
   const filteredUsers = users?.filter((user) =>
@@ -321,11 +334,30 @@ export default function UsersPage() {
 
       <Card>
         <CardHeader className="border-b bg-muted/30">
-          <div className="flex items-center gap-2 text-sm">
-            <RefreshCw className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground">Last sync:</span>
-            <span className="font-medium">Just now</span>
-            <Badge variant="secondary" className="ml-2">Simulated</Badge>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm">
+              <RefreshCw className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">LDAP Status:</span>
+              {ldapStatus?.configured ? (
+                <>
+                  <Badge variant={ldapStatus.connected ? "default" : "destructive"}>
+                    {ldapStatus.connected ? "Connected" : "Connection Failed"}
+                  </Badge>
+                  {ldapStatus.userCount !== undefined && (
+                    <span className="text-muted-foreground">
+                      ({ldapStatus.userCount} users in directory)
+                    </span>
+                  )}
+                </>
+              ) : (
+                <Badge variant="secondary">Not Configured</Badge>
+              )}
+            </div>
+            {!ldapStatus?.configured && (
+              <span className="text-xs text-muted-foreground">
+                Set LDAP_URL, LDAP_BASE_DN, LDAP_BIND_DN, LDAP_BIND_PASSWORD to enable real AD sync
+              </span>
+            )}
           </div>
         </CardHeader>
         <CardContent className="pt-6">
