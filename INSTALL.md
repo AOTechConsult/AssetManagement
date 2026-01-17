@@ -13,15 +13,20 @@ Before you begin, ensure you have:
 
 ## Step 1: Download the Application
 
+<<<<<<< HEAD
 You need to get the application files onto your server first.
 
 ### Option A: Using Git (if available)
+=======
+Clone or download the application to your server:
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
 
 ```bash
 git clone <your-repository-url> asset-management
 cd asset-management
 ```
 
+<<<<<<< HEAD
 ### Option B: Download as ZIP file
 
 1. Download the ZIP file from your repository or source
@@ -61,6 +66,15 @@ If you don't see `package.json`, you're either:
 - The files weren't extracted properly
 - You need to extract the ZIP file first
 
+=======
+Or if you downloaded a zip file:
+
+```bash
+unzip asset-management.zip
+cd asset-management
+```
+
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
 ## Step 2: Install Dependencies
 
 Install all required packages:
@@ -102,12 +116,15 @@ CREATE USER asset_user WITH PASSWORD 'your-secure-password';
 CREATE DATABASE asset_management OWNER asset_user;
 GRANT ALL PRIVILEGES ON DATABASE asset_management TO asset_user;
 
+<<<<<<< HEAD
 # Connect to the new database and grant schema permissions (required for PostgreSQL 15+)
 \c asset_management
 GRANT ALL ON SCHEMA public TO asset_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO asset_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO asset_user;
 
+=======
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
 # Exit PostgreSQL
 \q
 ```
@@ -166,12 +183,15 @@ CREATE USER asset_user WITH PASSWORD 'your-secure-password';
 CREATE DATABASE asset_management OWNER asset_user;
 GRANT ALL PRIVILEGES ON DATABASE asset_management TO asset_user;
 
+<<<<<<< HEAD
 -- Grant schema permissions (required for PostgreSQL 15+)
 \c asset_management
 GRANT ALL ON SCHEMA public TO asset_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO asset_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO asset_user;
 
+=======
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
 \q
 ```
 
@@ -201,6 +221,7 @@ From the Start menu, open "SQL Shell (psql)" and login with the postgres user.
 CREATE USER asset_user WITH PASSWORD 'your-secure-password';
 CREATE DATABASE asset_management OWNER asset_user;
 GRANT ALL PRIVILEGES ON DATABASE asset_management TO asset_user;
+<<<<<<< HEAD
 
 -- Grant schema permissions (required for PostgreSQL 15+)
 \c asset_management
@@ -208,6 +229,8 @@ GRANT ALL ON SCHEMA public TO asset_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO asset_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO asset_user;
 
+=======
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
 \q
 ```
 
@@ -231,12 +254,15 @@ CREATE USER asset_user WITH PASSWORD 'your-secure-password';
 CREATE DATABASE asset_management OWNER asset_user;
 GRANT ALL PRIVILEGES ON DATABASE asset_management TO asset_user;
 
+<<<<<<< HEAD
 -- Grant schema permissions (required for PostgreSQL 15+)
 \c asset_management
 GRANT ALL ON SCHEMA public TO asset_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO asset_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO asset_user;
 
+=======
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
 \q
 ```
 
@@ -375,6 +401,7 @@ NODE_ENV=production
 
 # Server port (optional, defaults to 5000)
 PORT=5000
+<<<<<<< HEAD
 
 # Host binding (use 127.0.0.1 for Windows)
 HOST=0.0.0.0
@@ -403,6 +430,8 @@ HOST=0.0.0.0
 # LDAP_ADMIN_GROUP_DN=CN=Asset-Admins,OU=Groups,DC=example,DC=com
 # LDAP_USER_GROUP_DN=CN=Asset-Users,OU=Groups,DC=example,DC=com
 # LDAP_READONLY_GROUP_DN=CN=Asset-Viewers,OU=Groups,DC=example,DC=com
+=======
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
 ```
 
 ### Generating a Secure SESSION_SECRET
@@ -446,12 +475,17 @@ npm run build
 
 ## Step 7: Start the Application
 
+<<<<<<< HEAD
 **Linux/macOS:**
+=======
+Start the server:
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
 
 ```bash
 npm start
 ```
 
+<<<<<<< HEAD
 **Windows (PowerShell):**
 
 ```powershell
@@ -474,6 +508,9 @@ node dist/index.cjs
 ```
 
 The application will be available at `http://your-server-ip:5000` (or `http://127.0.0.1:5000` on Windows)
+=======
+The application will be available at `http://your-server-ip:5000`
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
 
 ## Step 8: Create Your First Admin User
 

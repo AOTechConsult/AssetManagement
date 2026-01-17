@@ -14,10 +14,13 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)]
 );
 
+<<<<<<< HEAD
 // User roles for role-based access control
 export const USER_ROLES = ["admin", "user", "readonly"] as const;
 export type UserRole = typeof USER_ROLES[number];
 
+=======
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
 // User storage table for local authentication
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -26,10 +29,15 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+<<<<<<< HEAD
   role: varchar("role").default("user"),
   isAdmin: boolean("is_admin").default(false),
   isActive: boolean("is_active").default(true),
   ldapDN: varchar("ldap_dn"),
+=======
+  isAdmin: boolean("is_admin").default(false),
+  isActive: boolean("is_active").default(true),
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

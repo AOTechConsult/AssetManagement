@@ -221,7 +221,11 @@ function UserFormDialog({
             <div className="flex items-center space-x-2">
               <Switch
                 id="isActive"
+<<<<<<< HEAD
                 checked={formData.isActive ?? true}
+=======
+                checked={formData.isActive}
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
                 onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
                 data-testid="switch-active"
               />
@@ -270,6 +274,7 @@ export default function UsersPage() {
     mutationFn: async () => {
       return apiRequest("POST", "/api/ad-users/sync");
     },
+<<<<<<< HEAD
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/ad-users"] });
       queryClient.invalidateQueries({ queryKey: ["/api/ldap/status"] });
@@ -277,12 +282,18 @@ export default function UsersPage() {
         title: "Sync Complete", 
         description: data.message || "AD sync completed successfully",
       });
+=======
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/ad-users"] });
+      toast({ title: "Success", description: "AD sync completed" });
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
+<<<<<<< HEAD
   const { data: ldapStatus } = useQuery<{
     configured: boolean;
     connected?: boolean;
@@ -292,6 +303,8 @@ export default function UsersPage() {
     queryKey: ["/api/ldap/status"],
   });
 
+=======
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
   const filteredUsers = users?.filter((user) =>
     user.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -334,6 +347,7 @@ export default function UsersPage() {
 
       <Card>
         <CardHeader className="border-b bg-muted/30">
+<<<<<<< HEAD
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
               <RefreshCw className="h-4 w-4 text-muted-foreground" />
@@ -358,6 +372,13 @@ export default function UsersPage() {
                 Set LDAP_URL, LDAP_BASE_DN, LDAP_BIND_DN, LDAP_BIND_PASSWORD to enable real AD sync
               </span>
             )}
+=======
+          <div className="flex items-center gap-2 text-sm">
+            <RefreshCw className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">Last sync:</span>
+            <span className="font-medium">Just now</span>
+            <Badge variant="secondary" className="ml-2">Simulated</Badge>
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
           </div>
         </CardHeader>
         <CardContent className="pt-6">

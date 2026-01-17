@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import type { Express, Request, Response, NextFunction } from "express";
+=======
+import type { Express, Request, Response } from "express";
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
 import { createServer, type Server } from "http";
 import passport from "passport";
 import { storage } from "./storage";
@@ -9,6 +13,7 @@ import {
   insertAdUserSchema,
   ASSET_STATUSES,
 } from "@shared/schema";
+<<<<<<< HEAD
 import { loginSchema, registerSchema, type UserRole } from "@shared/models/auth";
 import { z } from "zod";
 import { isLdapConfigured, syncAllUsers, testConnection as testLdapConnection, getLdapConfig, getUserRole } from "./ldap";
@@ -55,6 +60,10 @@ function canWrite(req: Request, res: Response, next: NextFunction) {
   
   return next();
 }
+=======
+import { loginSchema, registerSchema } from "@shared/models/auth";
+import { z } from "zod";
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
 
 function getClientInfo(req: Request) {
   return {
@@ -563,6 +572,7 @@ export async function registerRoutes(
       const { userId, userName } = getUserInfo(req);
       const { ipAddress, userAgent } = getClientInfo(req);
 
+<<<<<<< HEAD
       if (!isLdapConfigured()) {
         await storage.createAuditLog({
           entityType: "system",
@@ -613,22 +623,29 @@ export async function registerRoutes(
         }
       }
 
+=======
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
       await storage.createAuditLog({
         entityType: "system",
         entityId: "ad-sync",
         action: "sync",
         userId,
         userName,
+<<<<<<< HEAD
         newData: { 
           action: "AD Sync completed", 
           totalUsers: ldapUsers.length,
           created,
           updated,
         },
+=======
+        newData: { action: "AD Sync triggered" },
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
         ipAddress,
         userAgent,
       });
 
+<<<<<<< HEAD
       res.json({ 
         success: true, 
         message: `AD sync completed. ${created} users created, ${updated} users updated.`,
@@ -665,6 +682,12 @@ export async function registerRoutes(
         connected: false,
         message: `Error testing LDAP connection: ${error.message}`,
       });
+=======
+      res.json({ success: true, message: "AD sync completed (simulated)" });
+    } catch (error) {
+      console.error("Error syncing AD:", error);
+      res.status(500).json({ message: "Failed to sync AD" });
+>>>>>>> 7cd0e1983beccdc0d39cff9353dca177243c23ed
     }
   });
 
